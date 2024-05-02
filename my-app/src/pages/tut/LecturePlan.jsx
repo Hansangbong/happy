@@ -6,7 +6,7 @@ import Pagination from '../../components/common/Pagination';
 import { useSelector } from 'react-redux';
 
 const LecturePlan = () => {
-    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPage, setCurrentPage] = useState(1); //[변수명, set함수명] =(초기값)
   const [equcurrentPage, setEqucurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [totalcnt, setTotalcnt] = useState(0);
@@ -26,10 +26,10 @@ const LecturePlan = () => {
   const [roometc, setRoometc] = useState("");
   const [action, setAction] = useState("");
 
-  useEffect(() => {
+  useEffect(() => {    //useEffect(effect함수, 의존성 배열)
     console.log("useEffect");
     searchroom();
-  }, []);
+  }, []); //마운트,언마운트 시 호출됨, 강의실 검색에서 사용하는 듯
 
   useEffect(() => {
     console.log("searchroomid useEffect");
@@ -46,6 +46,7 @@ const LecturePlan = () => {
 
     //alert(searchRoomName);
 
+  
     let params = new URLSearchParams();
     params.append("cpage", currentPage);
     params.append("pagesize", pageSize);
@@ -90,6 +91,7 @@ const LecturePlan = () => {
         setEquitemlist(res.data.listdata);
         console.log("result console : " + res);
         console.log("result console : " + JSON.stringify(res));
+        console.log("!!!!!!!!!!!!!!!?"+<res className="data listdat"></res>+"?!!!!!!!!!!!!!!!!!!!!!")
       })
       .catch((err) => {
         console.log("list error");
@@ -254,16 +256,16 @@ const LecturePlan = () => {
             <tbody>
                 {roomlist.map((item) => {
                     return (
-                        <tr key={item.lecrm_id}>
+                        <tr key={item.lec_type_id}>
                             <td
                               className="pointer-cursor"
-                              onClick={() => searchequlist(item.lecrm_id)}
+                              onClick={() => searchequlist(item.lec_type_id)}
                             >
-                              {item.lecrm_name}
+                              {item.type_name}
                             </td>
-                            <td>{item.lecrm_size}</td>
-                            <td>{item.lecrm_snum}</td>
-                            <td>{item.lecrm_note}</td>
+                            <td>{item.lecrm_name}</td>
+                            <td>{item.start_data}</td>
+                            <td>{item.pre_pnum}</td>
                         </tr>
                     );                   
                 })}
