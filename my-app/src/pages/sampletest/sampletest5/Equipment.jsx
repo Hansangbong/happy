@@ -19,6 +19,7 @@ const Equipment = () => {
     // const id = useMemo(() => new URLSearchParams(search), [search]);
 
     const queryParam = useQueryParam();
+    console.log("쿼리파람: "+queryParam);
     const searchroomid = queryParam.get('id');
 
 
@@ -119,7 +120,7 @@ const Equipment = () => {
                             </tbody>
                         </table>
                     </div>
-                    {equipmentModal ? <ModalEquipment modalAction={equipmentModal} setModalAction={setEquipmentModal} id={equId}></ModalEquipment> : null}
+                    {equipmentModal ? <ModalEquipment modalAction={equipmentModal} setModalAction={setEquipmentModal} lecrm_id={searchroomid} id={equId}></ModalEquipment> : null}
                 </div>
             )}
         </div>
