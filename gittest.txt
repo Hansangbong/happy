@@ -1,6 +1,10 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 duck
 final
+=======
+duck
+>>>>>>> b964751ef5c395c75a4af7a8c1c1aa489e57aac8
 =======
 duck
 >>>>>>> b964751ef5c395c75a4af7a8c1c1aa489e57aac8

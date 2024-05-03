@@ -32,7 +32,7 @@ const ModalEquipment = (props) => {
 
         axios
             .post("/adm/lectureRoomDtl.do", params)
-            .then((res) => {
+            .then((res)   => {
                 setSelinfo(res.data.selinfo);
             })
             .catch((err) => {
