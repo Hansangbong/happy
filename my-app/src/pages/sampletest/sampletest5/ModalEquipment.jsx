@@ -2,9 +2,13 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import Modal from "react-modal";
 import * as commonjs from "../../../components/common/commonfunction.js";
+import { useNavigate } from "react-router-dom";
 
 const ModalEquipment = (props) => {
     const [selinfo, setSelinfo] = useState({});
+
+    //네비게이션
+    const navigate = useNavigate();
 
     useEffect(() => {
         //roommod(props.id);

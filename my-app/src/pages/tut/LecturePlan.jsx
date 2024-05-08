@@ -1,289 +1,156 @@
-import React , {useState, useEffect, useRef } from 'react';
-//import '../../pages/sampletest/SamplePage1.css'
-import axios from 'axios';
-import modal from 'react-modal';
-import Pagination from '../../components/common/Pagination';
-import { useSelector } from 'react-redux';
+import { useEffect, useRef, useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import Pagination from "../../components/common/Pagination";
+
+
+
 
 const LecturePlan = () => {
-    const [currentPage, setCurrentPage] = useState(1); //[변수명, set함수명] =(초기값)
-  const [equcurrentPage, setEqucurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const navigate = useNavigate();
+  const searchRoomName = useRef();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [leclist, setLeclist] = useState([]);
   const [totalcnt, setTotalcnt] = useState(0);
-  const [searchRoomName, setSearchRoomName] = useState("");
-  const [roomlist, setRoomlist] = useState([]);
-  const [blocksize] = useState(10);
-  const [equdis, setEqudis] = useState(false);
-  const [searchroomid, setSearchroomid] = useState(0);
-  const [equitemlist, setEquitemlist] = useState([]);
-  const [equtotalcnt, setEqutotalcnt] = useState(0);
-  const [roomdis, setRoomdis] = useState(false);
-  const [isroomRegBtn, setIsroomRegBtn] = useState(false);
-
-  const [roomname, setRoomname] = useState("");
-  const [roomsize, setRoomsize] = useState(0);
-  const [roomsite, setRoomsite] = useState(0);
-  const [roometc, setRoometc] = useState("");
-  const [action, setAction] = useState("");
-
-  useEffect(() => {    //useEffect(effect함수, 의존성 배열)
-    console.log("useEffect");
-    searchroom();
-  }, []); //마운트,언마운트 시 호출됨, 강의실 검색에서 사용하는 듯
-
-  useEffect(() => {
-    console.log("searchroomid useEffect");
-    equlist();
-  }, [searchroomid]);
-
-  const changesearchroom = (e) => {
-    setSearchRoomName(e.target.value);
-  };
-
-  const searchroom = (cpage) => {
-    cpage = cpage || 1;
-    setCurrentPage(cpage);
-
-    //alert(searchRoomName);
-
+  const [progress, setProgress] = useState('ing');
   
-    let params = new URLSearchParams();
-    params.append("cpage", currentPage);
-    params.append("pagesize", pageSize);
-    params.append("searchRoomName", searchRoomName);
+  
 
-    axios
-      .post("/adm/lectureRoomListjson.do", params)
-      .then((res) => {
-        setTotalcnt(res.data.listcnt);
-        setRoomlist(res.data.listdata);
-        console.log("result console : " + res);
-        console.log("result console : " + JSON.stringify(res));
-      })
-      .catch((err) => {
-        console.log("list error");
-        alert(err.message);
-      });
-  };
-
-  const searchequlist = (id) => {
-    //alert(id);
-    setSearchroomid(id);
-    //equlist();
-  };
-
-  const equlist = async (cpage) => {
-    cpage = cpage || 1;
-    setEqucurrentPage(cpage);
-    setEqudis(true);
-
-    //alert(searchroomid);
-
-    let params = new URLSearchParams();
-    params.append("cpage", cpage);
-    params.append("pagesize", pageSize);
-    params.append("lecrm_id", searchroomid);
-
-    await axios
-      .post("/adm/equListjson.do", params)
-      .then((res) => {
-        setEqutotalcnt(res.data.listcnt);
-        setEquitemlist(res.data.listdata);
-        console.log("result console : " + res);
-        console.log("result console : " + JSON.stringify(res));
-        console.log("!!!!!!!!!!!!!!!?"+<res className="data listdat"></res>+"?!!!!!!!!!!!!!!!!!!!!!")
-      })
-      .catch((err) => {
-        console.log("list error");
-        alert(err.message);
-      });
-  };
-
-  const closeroomModal = () => {
-    setRoomdis(false);
-  };
-
-  const newroom = () => {
-    setRoomdis(true);
-    setIsroomRegBtn(true);
-
-    setRoomname("");
-    setRoomsize(0);
-    setRoomsite(0);
-    setRoometc("");
-    setAction("I");
-  };
-
-  const roommod = (id) => {
-    //alert(id);
-
-    let params = new URLSearchParams();
-
-    params.append("lecrm_id", id);
-
-    axios
-      .post("/adm/lectureRoomDtl.do", params)
-      .then((res) => {
-        console.log("result detial : " + JSON.stringify(res));
-        setRoomname(res.data.selinfo.lecrm_name);
-        setRoomsize(res.data.selinfo.lecrm_size);
-        setRoomsite(res.data.selinfo.lecrm_snum);
-        setRoometc(res.data.selinfo.lecrm_note);
-
-        setSearchroomid(id);
-        setAction("U");
-        setIsroomRegBtn(false);
-        setRoomdis(true);
-      })
-      .catch((err) => {
-        console.log("list error");
-        alert(err.message);
-      });
-  };
-
-  const roomdel = () => {
-    roomreg("D");
-  };
-
-  const roomreg = (type) => {
-    if (typeof type == "object") {
-      type = action;
-    }
-
-    //alert(typeof type + " : " + type + " : " + action);
-
-    let params = new URLSearchParams();
-
-    params.append("lecrm_name", roomname);
-    params.append("lecrm_size", roomsize);
-    params.append("lecrm_snum", roomsite);
-    params.append("lecrm_note", roometc);
-    params.append("lecrm_id", searchroomid);
-    params.append("action", type);
-
-    axios
-      .post("/adm/lectureRoomSave.do", params)
-      .then((res) => {
-        console.log("result save : " + JSON.stringify(res));
-
-        if (res.data.result == "S") {
-          alert(res.data.resultmsg);
-          closeroomModal();
-
-          if (action === "I") {
-            searchroom();
-          } else {
-            searchroom(currentPage);
-          }
-        } else {
-          alert(res.data.resultmsg);
-        }
-      })
-      .catch((err) => {
-        console.log("list error");
-        alert(err.message);
-      });
-  };
 
   const searchstyle = {
     fontsize: "15px",
     fontweight: "bold",
   };
 
+
   const searchstylewidth = {
     height: "28px",
     width: "200px",
   };
 
-  const modalStyle = {
-    content: {
-      top: "50%",
-      left: "50%",
-      right: "auto",
-      bottom: "auto",
-      boxShadow: "rgba(0, 0, 0, 0.24) 0px 3px 8px",
-      transform: "translate(-50%, -50%)",
-    },
+  useEffect(() => {
+    searchroom(currentPage);
+  }, [currentPage]);
+
+
+  const searchequlist = (lecrmId) => {
+    const query = [`id=${lecrmId ?? 0}`];
+    navigate(`/dashboard/tut/TestLecturePlan?${query}`)
+  }
+
+  const searchroom = (cpage) => {
+    if (typeof cpage === 'number') {
+      cpage = cpage || 1;
+    } else {
+      cpage = 1;
+    }
+
+    let params = new URLSearchParams();
+    params.append("currentPage", cpage);
+    params.append("pageSize", 10);
+    console.log("서치룸함수 실행!!")
+    params.append("searchWord", searchRoomName.current.value);
+    params.append("progress" , progress);
+    axios
+      .post("/tut/fLectureListJson.do", params)
+      .then((res) => {
+        setTotalcnt(res.data.listcnt);
+        setLeclist(res.data.listdata);
+        setCurrentPage(cpage);
+        setProgress(progress);
+      })
+      .catch((err) => {
+        alert(err.message);
+      });
   };
 
+  const toggle = (state)=> {
+    console.log("토클함수 실행!!")
+    setProgress(state); 
+    searchroom();
+  }
 
+  return (
+    <div>
+      <div>
+        <p className="Location">
+          <span className="btn_nav bold">기준정보</span>
+          <span className="btn_nav bold"> 공지사항 관리</span>
+        </p>
+        <p className="conTitle">
+          <span>강의계획서 관리</span>
+          <span className="fr">
+            <span style={searchstyle}>강의 명 </span>
+            <input
+              type="text"
+              id="searchRoomName"
+              name="searchRoomName"
+              className="form-control"
+              placeholder=""
+              style={searchstylewidth}
+              ref={searchRoomName}
+            />
+            <button
+              className="btn btn-primary"
+              onClick={searchroom}
+              name="searchbtn"
+              id="searchbtn"
+            >
+              <span>검색</span>
+            </button>
 
-    return(
-        <><div id="notice">
-            <p className="Location">
-                <a href="/dashboard" className="btn_set home">home</a>
-                <span className="btn_nav bold">기준정보</span>
-                <span className="btn_nav bold">공지사항 관리</span>
-                <a href="../system/notice" className="btn_set refresh">새로고침</a>
-            </p>
-            <p className="conTitle">
-                <span>강의계획서 관리</span>
-                
-
-                
-                <span className="fr">
-                    <span> 강의명 </span>
-                <input type="text" className="form-control"
-                style={{width: '200px', marginRight: '5px'}}
-                onChange={(e) => {
-                    console.log("input text")//setKeyword(e.target.value)
-                }}/>
-                    <button
-                    onClick={(e) => {console.log("id=fr onClick")}}
-                    className='btn btn-primary'
-                    id='btnSearchGrpcod'
-                    name='btn'
-                >
-                <span> 검 색 </span>
-                </button>
-                
-                </span>
-            </p>
             
-            
+          </span>
+        </p>
 
-
-          <div style={{ marginTop: '50px' }}>
-            <table className='col'>
+        <div>
+          <button className="btn btn-primary" 
+          onClick={() => {
+            toggle('ing'); }}>진행중 강의 </button>{" "}
+          <button className="btn btn-primary" 
+          onClick={() => {
+            toggle('end'); }}> 종료된 강의</button>
+          <table className="col">
+            <colgroup>
+              <col width="20%" />
+              <col width="35%" />
+              <col width="30%" />
+              <col width="40%" />
+              
+            </colgroup>
             <thead>
               <tr>
-              <th scope='col'> 분류 </th>
-              <th scope='col'> 강의명 </th>
-              <th scope='col'> 기간 </th>
-              <th scope='col'> 수강인원 </th> 
-            </tr>
+                <th>분류</th>
+                <th>강의명</th>
+                <th>기간</th>
+                <th>수강인원</th>
+                
+              </tr>
             </thead>
             <tbody>
-                {roomlist.map((item) => {
-                    return (
-                        <tr key={item.lec_type_id}>
-                            <td
-                              className="pointer-cursor"
-                              onClick={() => searchequlist(item.lec_type_id)}
-                            >
-                              {item.type_name}
-                            </td>
-                            <td>{item.lecrm_name}</td>
-                            <td>{item.start_data}</td>
-                            <td>{item.pre_pnum}</td>
-                        </tr>
-                    );                   
-                })}
+              {leclist.map((item) => {                
+                return (
+                  <tr key={item.lec_id}>
+                    <td>{item.lec_type_name}{/*count =+ 1*/}</td>
+                    <td>{item.lec_name} </td>                                                          
+                    <td>{item.start_date} ~ {item.end_date}</td>
+                    <td>{item.pre_pnum}/{item.max_pnum}{console.log("프로그레스 상태: "+progress)}</td>
+                  </tr>
+                );
+              })}<p>{progress}</p>
             </tbody>
-      </table>
-      
-    </div> </div></>
-        
-        
-
-         
-    )
+          </table>
+          <Pagination
+            currentPage={currentPage}
+            totalPage={totalcnt}
+            pageSize={5}
+            blockSize={5}
+            onClick={searchroom}
+          />
+        </div>
+      </div>
+    </div>
+  )
 }
 
-
-
-
-
 export default LecturePlan;
-
-

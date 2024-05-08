@@ -1,19 +1,16 @@
 import { useEffect, useRef, useState } from "react";
-import Equipment from "./sampletest5/Equipment";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Pagination from "../../components/common/Pagination";
-import ModalLecture from "./sampletest5/ModalLecture";
 
 
-const SamplePage5 = () => {
+
+const TestLecturePlan = () => {
   const navigate = useNavigate();
   const searchRoomName = useRef();
   const [currentPage, setCurrentPage] = useState(1);
-  const [roomlist, setRoomlist] = useState([]);
+  const [leclist, setLeclist] = useState([]);
   const [totalcnt, setTotalcnt] = useState(0);
-  const [lectureModal, setLectureModal] = useState(false); // true가 되면 모달창이  보이게됨
-  const [lecrmId, setLecrmId] = useState();
   
 
 
@@ -30,11 +27,11 @@ const SamplePage5 = () => {
 
   useEffect(() => {
     searchroom(currentPage);
-  }, [currentPage, lectureModal]);
+  }, [currentPage]);
 
   const searchequlist = (lecrmId) => {
     const query = [`id=${lecrmId ?? 0}`];
-    navigate(`/dashboard/sampletest/samplepage5?${query}`)
+    navigate(`/dashboard/tut/TestLecturePlan?${query}`)
   }
 
   const searchroom = (cpage) => {
@@ -51,7 +48,7 @@ const SamplePage5 = () => {
       .post("/adm/lectureRoomListjson.do", params)
       .then((res) => {
         setTotalcnt(res.data.listcnt);
-        setRoomlist(res.data.listdata);
+        setLeclist(res.data.listdata);
         console.log("res listdat 입니다:  "+res.data.listdata);
         setCurrentPage(cpage);
       })
@@ -60,29 +57,19 @@ const SamplePage5 = () => {
       });
   };
 
-  const openLecture = (id) => {
-    setLecrmId(id);
-    setLectureModal(true);
-  }
-
-  const newroom = () => {
-    setLecrmId("");
-    setLectureModal(true);
-  }
-
   
 
   return (
     <div>
       <div>
         <p className="Location">
-          <span className="btn_nav bold">시설 관리</span>{" "}
-          <span className="btn_nav bold"> 강의실</span>{" "}
+          <span className="btn_nav bold">기준정보</span>
+          <span className="btn_nav bold"> 공지사항 관리</span>
         </p>
         <p className="conTitle">
-          <span>강의실</span>{" "}
+          <span>강의계획서 관리</span>
           <span className="fr">
-            <span style={searchstyle}>강의실 명 </span>
+            <span style={searchstyle}>강의 명 </span>
             <input
               type="text"
               id="searchRoomName"
@@ -101,61 +88,40 @@ const SamplePage5 = () => {
               <span>검색</span>
             </button>
 
-            <button
-              className="btn btn-primary"
-              onClick={() => newroom()}
-              name="newReg"
-              id="newReg"
-            >
-              <span>강의실 신규등록</span>
-            </button>
+            
           </span>
         </p>
 
         <div>
-          <b>
-            총건수 : {totalcnt} 현재 페이지 번호 : {currentPage}
-          </b>
+          <b>진행중 강의 </b><b> 종료된 강의</b>
           <table className="col">
             <colgroup>
               <col width="20%" />
               <col width="15%" />
               <col width="15%" />
               <col width="40%" />
-              <col width="15%" />
+              
             </colgroup>
             <thead>
               <tr>
-                <th>강의실 명</th>
-                <th>강의실 크기</th>
-                <th>강의실 자리수</th>
-                <th>비고</th>
-                <th></th>
+                <th>분류</th>
+                <th>강의명</th>
+                <th>기간</th>
+                <th>수강인원</th>
+                
               </tr>
             </thead>
             <tbody>
-              {roomlist && roomlist.map((item) => {
+              {leclist.map((item) => {
                 return (
                   <tr key={item.lecrm_id}>
-                    <td
-                      className="pointer-cursor"
-                      onClick={() => searchequlist(item.lecrm_id)}
-                    >
+                    <td>
                       {item.lecrm_name}
                     </td>
                     <td>{item.lecrm_size}</td>
                     <td>{item.lecrm_snum}</td>
                     <td>{item.lecrm_note}</td>
-                    <td>
-                      <button
-                        className="btn btn-primary"
-                        onClick={() => {
-                          openLecture(item.lecrm_id)
-                        }}
-                      >
-                        수정
-                      </button>
-                    </td>
+                    
                   </tr>
                 );
               })}
@@ -169,11 +135,11 @@ const SamplePage5 = () => {
             onClick={searchroom}
           />
         </div>
-        <Equipment></Equipment>
-        {lectureModal ? <ModalLecture modalAction={lectureModal} setCurrentPage={setCurrentPage} setModalAction={setLectureModal} id={lecrmId}></ModalLecture> : null}
+        
+
       </div>
     </div>
   )
 }
 
-export default SamplePage5; 
+export default TestLecturePlan; 
