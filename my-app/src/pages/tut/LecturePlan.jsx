@@ -2,9 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Pagination from "../../components/common/Pagination";
-
-
-
+import LecPlanModal from "./LecPlanModal";
 
 const LecturePlan = () => {
   const navigate = useNavigate();
@@ -13,15 +11,13 @@ const LecturePlan = () => {
   const [leclist, setLeclist] = useState([]);
   const [totalcnt, setTotalcnt] = useState(0);
   const [progress, setProgress] = useState('ing');
+  const [lecplanModal, setLecplanModal] = useState(false);
+  const [lec_id, setLecid] = useState();
   
-  
-
-
-  const searchstyle = {
+    const searchstyle = {
     fontsize: "15px",
     fontweight: "bold",
   };
-
 
   const searchstylewidth = {
     height: "28px",
@@ -30,7 +26,7 @@ const LecturePlan = () => {
 
   useEffect(() => {
     searchroom(currentPage);
-  }, [currentPage]);
+  }, [currentPage, progress]);
 
 
   const searchequlist = (lecrmId) => {
@@ -44,11 +40,9 @@ const LecturePlan = () => {
     } else {
       cpage = 1;
     }
-
     let params = new URLSearchParams();
     params.append("currentPage", cpage);
     params.append("pageSize", 10);
-    console.log("서치룸함수 실행!!")
     params.append("searchWord", searchRoomName.current.value);
     params.append("progress" , progress);
     axios
@@ -57,7 +51,7 @@ const LecturePlan = () => {
         setTotalcnt(res.data.listcnt);
         setLeclist(res.data.listdata);
         setCurrentPage(cpage);
-        setProgress(progress);
+        //setProgress(progress);
       })
       .catch((err) => {
         alert(err.message);
@@ -65,9 +59,14 @@ const LecturePlan = () => {
   };
 
   const toggle = (state)=> {
-    console.log("토클함수 실행!!")
-    setProgress(state); 
-    searchroom();
+    setProgress(state);
+    // searchroom();
+  }
+
+  const openlec = (id) =>{
+    setLecid(id);
+    setLecplanModal(true);
+    
   }
 
   return (
@@ -124,7 +123,6 @@ const LecturePlan = () => {
                 <th>강의명</th>
                 <th>기간</th>
                 <th>수강인원</th>
-                
               </tr>
             </thead>
             <tbody>
@@ -132,12 +130,14 @@ const LecturePlan = () => {
                 return (
                   <tr key={item.lec_id}>
                     <td>{item.lec_type_name}{/*count =+ 1*/}</td>
-                    <td>{item.lec_name} </td>                                                          
+                    <td className="pointer-cursor"
+                        onClick={() => openlec(item.lec_id)}>
+                        {item.lec_name} </td>                                                          
                     <td>{item.start_date} ~ {item.end_date}</td>
-                    <td>{item.pre_pnum}/{item.max_pnum}{console.log("프로그레스 상태: "+progress)}</td>
+                    <td>{item.pre_pnum}/{item.max_pnum}</td>
                   </tr>
                 );
-              })}<p>{progress}</p>
+              })}
             </tbody>
           </table>
           <Pagination
@@ -148,6 +148,7 @@ const LecturePlan = () => {
             onClick={searchroom}
           />
         </div>
+        {lecplanModal ? <LecPlanModal id={lec_id} modalAction={lecplanModal} setModalAction={setLecplanModal} ></LecPlanModal> : null}
       </div>
     </div>
   )
