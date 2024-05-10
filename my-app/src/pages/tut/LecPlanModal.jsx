@@ -4,8 +4,10 @@ import Modal from "react-modal";
 import * as commonjs from "../../components/common/commonfunction.js";
 
 const LecPlanModal = (props) => {
-    const [lecinfo, setLecinfo ] = useState();
-    const [lecplanlist, setlecplanlist] = useState();
+    //const [lecinfo, setLecinfo ] = useState();
+    const [lecId, setLecId] = useState(props.id);
+    const [lecplanlist, setlecplanlist] = useState([]);
+    const idlist = props.idlist;
 
     const modalStyle = {
         content: {
@@ -19,27 +21,38 @@ const LecPlanModal = (props) => {
     };
 
     useEffect(() => {
-        inquiry();
-    },[lecinfo]);
+        console.log("유즈이펙트 함수내의 인쿼리 함수를 실행합니다.")
+        inquiry(lecId);
+    },[lecId]);
 
 
 const close = () =>{
     props.setModalAction(false);
 }
 
-const inquiry = () => {
+const inquiry = (lec_id) => {
+    console.log("inquiry 실행! 받은 매게변수: " + lec_id)
     let params = new URLSearchParams();
-    params.append("lec_id", props.id);
+    params.append("lec_id", lec_id);
     axios
         .post("/tut/fLecInfo.do", params)
         .then((res) => {
-            console.log("res 입니다: "+ res)
-            setlecplanlist(res.data.lecplanlist);
+            console.log("res 입니다: "+res);
+            console.log("res.data 임니다: "+res.data);
+            console.log("데이터입니다 : "+JSON.stringify(res.data))
+            setlecplanlist(res.data.lec_info);
+            
         })
         .catch((err) => {
             alert(err.message);
         });
 };
+
+
+const selectChange = (id) => {
+    console.log("selectChange함수 실행! setLecId 셋함수를 실행합니다")
+    setLecId(id);
+}
 
     return (
         <div>
@@ -56,48 +69,55 @@ const inquiry = () => {
                             <tr>
                                 <th>
                                     {" "}
-                                    과목 <sapn className="font_red">*</sapn>
+                                    과목 <span className="font_red">*</span>
                                 </th>
                                 <td>
-                                    <select>
-                                        <option>
-                                            {//res.lec_name} rec로 직접 접근 불가
-                                                lecplanlist.lec_name
-                                            } 
-                                        </option>
-                                        <option>
-                                            옵션2       
-                                        </option>
+                                    <select onChange={() => {
+                                        console.log("이벤트 발생!! 보내는 인자 값: "+ lecplanlist.lec_id);
+                                        selectChange(lecplanlist.lec_id);
+                                        //setLecId(v.target.value);
+
+                                    }}>
+                                        
+                                        {idlist.map((item) => {
+                                                return(
+                                                    <option>
+                                                        {item.lec_name}    
+                                                    </option>
+                                                )
+                                        })}
                                     </select>
                                 </td>
                             </tr>
                             <tr>
                                 <th>
                                     {" "}
-                                    강의분류<sapn className="font_red">*</sapn>
+                                    강의분류<span className="font_red">*</span>
                                 </th>
                                 <td>
-                                <select>
-                                        <option>
-                                            옵션1      
-                                        </option>
-                                        <option>
-                                            옵션2       
-                                        </option>
+                                <select >
+                                    {idlist.map((item) => {
+                                        return(
+                                            <option >
+                                                {item.lec_type_name}
+                                            </option>
+                                        )
+                                        })}
                                     </select>
                                 </td>
                                 <th>
                                     {" "}
-                                    대상자<sapn className="font_red">*</sapn>
+                                    대상자<span className="font_red">*</span>
                                 </th>
                                 <td>
-                                    <select>
-                                        <option>
-                                            옵션1      
-                                        </option>
-                                        <option>
-                                            옵션2       
-                                        </option>
+                                    <select >
+                                    {idlist.map((item) => {
+                                                return(
+                                                    <option >
+                                                        {item.lec_sort}
+                                                    </option>
+                                                )
+                                        })}
                                     </select>
                                 </td>
                             </tr>
@@ -110,20 +130,22 @@ const inquiry = () => {
                                     <input
                                         type="text"
                                         className="form-control input-sm"
+                                        value={lecplanlist.name}
                                     />
                                 </td>
                                 <th>
                                     {" "}
-                                    강의실<sapn className="font_red">*</sapn>
+                                    강의실<span className="font_red">*</span>
                                 </th>
                                 <td>
-                                    <select>
-                                        <option>
-                                            옵션1      
-                                        </option>
-                                        <option>
-                                            옵션2       
-                                        </option>
+                                    <select >
+                                        {idlist.map((item) => {
+                                            return(
+                                                <option >
+                                                    {lecplanlist.lecrm_name}
+                                                </option>
+                                            )
+                                        })}
                                     </select>
                                 </td>
                             </tr>
@@ -136,6 +158,7 @@ const inquiry = () => {
                                     <input
                                         type="text"
                                         className="form-control input-sm"
+                                        value={lecplanlist.mail}
                                     />
                                 </td>
                                 <th>
@@ -146,6 +169,8 @@ const inquiry = () => {
                                     <input
                                         type="text"
                                         className="form-control input-sm"
+                                        
+                                        value={lecplanlist.tel}
                                     />
                                 </td>
                             </tr>
@@ -159,6 +184,7 @@ const inquiry = () => {
                                         style={{ width: "250px" }}
                                         type="text"
                                         className="form-control input-sm"
+                                        value={lecplanlist.lec_goal}
                                     />
                                 </td>
                             </tr>

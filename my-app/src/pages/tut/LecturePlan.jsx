@@ -148,7 +148,7 @@ const LecturePlan = () => {
             onClick={searchroom}
           />
         </div>
-        {lecplanModal ? <LecPlanModal id={lec_id} modalAction={lecplanModal} setModalAction={setLecplanModal} ></LecPlanModal> : null}
+        {lecplanModal ? <LecPlanModal id={lec_id} idlist={leclist} modalAction={lecplanModal} setModalAction={setLecplanModal} ></LecPlanModal> : null}
       </div>
     </div>
   )
