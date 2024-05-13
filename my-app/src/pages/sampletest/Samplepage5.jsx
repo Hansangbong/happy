@@ -52,7 +52,6 @@ const SamplePage5 = () => {
       .then((res) => {
         setTotalcnt(res.data.listcnt);
         setRoomlist(res.data.listdata);
-        console.log("res listdat 입니다:  "+res.data.listdata);
         setCurrentPage(cpage);
       })
       .catch((err) => {
