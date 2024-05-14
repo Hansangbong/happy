@@ -9,12 +9,13 @@ const LecturePlan = () => {
   const searchRoomName = useRef();
   const [currentPage, setCurrentPage] = useState(1);
   const [leclist, setLeclist] = useState([]);
+  const [roomlist, setRoomlist] = useState([]);
   const [totalcnt, setTotalcnt] = useState(0);
   const [progress, setProgress] = useState('ing');
   const [lecplanModal, setLecplanModal] = useState(false);
   const [lec_id, setLecid] = useState();
-  
-    const searchstyle = {
+
+  const searchstyle = {
     fontsize: "15px",
     fontweight: "bold",
   };
@@ -26,6 +27,7 @@ const LecturePlan = () => {
 
   useEffect(() => {
     searchroom(currentPage);
+
   }, [currentPage, progress]);
 
 
@@ -44,29 +46,31 @@ const LecturePlan = () => {
     params.append("currentPage", cpage);
     params.append("pageSize", 10);
     params.append("searchWord", searchRoomName.current.value);
-    params.append("progress" , progress);
+    params.append("progress", progress);
     axios
       .post("/tut/fLectureListJson.do", params)
       .then((res) => {
         setTotalcnt(res.data.listcnt);
         setLeclist(res.data.listdata);
+        setRoomlist(res.data.lec_room);
         setCurrentPage(cpage);
-        //setProgress(progress);
+        //console.log(JSON.stringify(res.data));
+
       })
       .catch((err) => {
         alert(err.message);
       });
   };
 
-  const toggle = (state)=> {
+  const toggle = (state) => {
     setProgress(state);
     // searchroom();
   }
 
-  const openlec = (id) =>{
+  const openlec = (id) => {
     setLecid(id);
     setLecplanModal(true);
-    
+
   }
 
   return (
@@ -98,24 +102,26 @@ const LecturePlan = () => {
               <span>검색</span>
             </button>
 
-            
+
           </span>
         </p>
 
         <div>
-          <button className="btn btn-primary" 
-          onClick={() => {
-            toggle('ing'); }}>진행중 강의 </button>{" "}
-          <button className="btn btn-primary" 
-          onClick={() => {
-            toggle('end'); }}> 종료된 강의</button>
+          <button className="btn btn-primary"
+            onClick={() => {
+              toggle('ing');
+            }}>진행중 강의 </button>{" "}
+          <button className="btn btn-primary"
+            onClick={() => {
+              toggle('end');
+            }}> 종료된 강의</button>
           <table className="col">
             <colgroup>
               <col width="20%" />
               <col width="35%" />
               <col width="30%" />
               <col width="40%" />
-              
+
             </colgroup>
             <thead>
               <tr>
@@ -126,13 +132,13 @@ const LecturePlan = () => {
               </tr>
             </thead>
             <tbody>
-              {leclist.map((item) => {                
+              {leclist.map((item, i) => {
                 return (
-                  <tr key={item.lec_id}>
+                  <tr key={i}>
                     <td>{item.lec_type_name}{/*count =+ 1*/}</td>
                     <td className="pointer-cursor"
-                        onClick={() => openlec(item.lec_id)}>
-                        {item.lec_name} </td>                                                          
+                      onClick={() => openlec(item.lec_id)}>
+                      {item.lec_name} </td>
                     <td>{item.start_date} ~ {item.end_date}</td>
                     <td>{item.pre_pnum}/{item.max_pnum}</td>
                   </tr>
@@ -148,7 +154,7 @@ const LecturePlan = () => {
             onClick={searchroom}
           />
         </div>
-        {lecplanModal ? <LecPlanModal id={lec_id} idlist={leclist} modalAction={lecplanModal} setModalAction={setLecplanModal} ></LecPlanModal> : null}
+        {lecplanModal ? <LecPlanModal id={lec_id} roomlist={roomlist} idlist={leclist} modalAction={lecplanModal} setModalAction={setLecplanModal} ></LecPlanModal> : null}
       </div>
     </div>
   )

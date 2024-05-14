@@ -1,16 +1,18 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Modal from "react-modal";
-import * as commonjs from "../../components/common/commonfunction.js";
 
-const LecPlanModal = (props) => {
-    //const [lecinfo, setLecinfo ] = useState();
-    const [lecId, setLecId] = useState(props.id);
-    const [lecplanlist, setlecplanlist] = useState([]);
-    const [lecWeeklist, setLecWeeklist] = useState([]);
-    const idlist = props.idlist;
+const LecPlanModal = ({ id, idlist, modalAction, roomlist, setModalAction }) => {
+    const [lecInfo, setLecInfo] = useState({}); // 강의 계획서 관리
+    const [weeklyPlan, setWeeklyPlan] = useState([]); // 주간 계획 리스트
+    const [subject, setSubject] = useState(lecInfo.lec_id); // 과목
+    const [lecture, setLecture] = useState(0); // 강의실
+    const goal = useRef('');
 
-    
+    useEffect(() => {
+        getLecPlanDetail();
+        console.log(roomlist)
+    }, []);
 
     const modalStyle = {
         content: {
@@ -23,94 +25,50 @@ const LecPlanModal = (props) => {
         },
     };
 
-    useEffect(() => {
-        //console.log("유즈이펙트 함수내의 인쿼리 함수를 실행합니다.")
-        
-        inquiry(lecId);
-    },[lecId]);
+    const getLecPlanDetail = () => {
+        let param = new URLSearchParams();
+        param.append('lec_id', id);
 
-
-const close = () =>{
-    props.setModalAction(false);
-}
-
-const save = (updateinfo) =>{
-    console.log("저장 버튼 이벤트 발생!! 받아온 매개변수 값: "+ updateinfo.tutor_id)
-    console.log(""+ updateinfo.lec_goal)
-    console.log(""+ updateinfo.lecrm_id)
-    console.log(""+ updateinfo.lec_type_id)
-    console.log(""+ updateinfo.lec_sort)
-    console.log(""+ updateinfo.lec_id)
-    let params = new URLSearchParams();
-     params.append("tutor_id", updateinfo.tutor_id);
-     params.append("lec_goal", updateinfo.lec_goal);
-     params.append("lecrm_id", updateinfo.lecrm_id);
-     params.append("lec_type_id", updateinfo.lec_type_id);
-     params.append("lec_sort", updateinfo.lec_sort);
-     params.append("lec_id", updateinfo.lec_id);
-    axios
-        .post("/tut/savePlan.do", params)
-        .then((res) => {
-        alert("save의 알러트입니다:  "+res.data.resultMsg);
+        axios.post('/tut/fLecInfo.do', param).then((res) => {
+            setLecInfo(res.data.lec_info);
+            console.log(res.data.lec_info)
+            setWeeklyPlan(res.data.week_plan);
+        }).catch((e) => {
+            alert(e);
         })
-        .catch((err) => {
-            alert(err.message);
-        })
+    }
 
-    close();
-}
-
-const inquiry = (lec_id) => {
-    //console.log("inquiry 실행! 받은 매게변수: " + lec_id)
-    let params = new URLSearchParams();
-    params.append("lec_id", lec_id);
-    axios
-        .post("/tut/fLecInfo.do", params)
-        .then((res) => {
-            //console.log("데이터입니다 : "+JSON.stringify(res.data));
-            setlecplanlist(res.data.lec_info);
-            setLecWeeklist(res.data.week_plan);            
-        })
-        .catch((err) => {
-            alert(err.message);
-        });
-};
-
-
-const selectChange = (id) => {
-    //console.log("selectChange함수 실행! setLecId 셋함수를 실행합니다")
-    setLecId(id);
-}
+    const saveLecPlan = () => {
+        let param = new URLSearchParams(
+            { tutor_id: id, lec_goal: goal.current, lecrm_id: lecture, lec_type_id: , lec_sort, lec_id }
+        );
+    }
 
     return (
         <div>
             <Modal
                 style={modalStyle}
-                isOpen={props.modalAction}
+                isOpen={modalAction}
                 appElement={document.getElementById('app')}
             >
                 <div>
-                    <span>강의 계획서</span>
+                    <span>강의 계획서</span>{/*alert("초기화된 밸류의 값 : "+value1)*/}
 
                     <table style={{ width: "550px", height: "350px" }}>
                         <tbody>
-                            <tr>
+                            <tr >
                                 <th>
                                     {" "}
                                     과목 <span className="font_red">*</span>
                                 </th>
                                 <td>
-                                    <select onChange={(v) => {
-                                        //console.log("이벤트 발생!! 보내는 인자 값: "+ lecplanlist.lec_id);
-                                        selectChange(v.target.value);
-                                    }}>
-                                        
-                                        {idlist.map((item) => {
-                                                return(
-                                                    <option value={item.lec_id}>
-                                                        {item.lec_name}    
-                                                    </option>
-                                                )
+                                    <select onChange={(e) => setSubject(e.target.value)}>
+                                        {idlist.map((item, i) => {
+                                            return (
+                                                <option key={i} value={item.lec_id} selected={id === item.lec_id ? true : false}>
+                                                    {item.lec_name}
+                                                </option>
+                                            )
                                         })}
                                     </select>
                                 </td>
@@ -121,39 +79,38 @@ const selectChange = (id) => {
                                     강의분류<span className="font_red">*</span>
                                 </th>
                                 <td>
-                                <select defaultValue={idlist.lec_type_name}>
-                                    <option >
-                                        C
-                                    </option>
-                                    <option>
-                                        C++
-                                    </option>
-                                    <option>
-                                        Java
-                                    </option>
-                                    <option>
-                                        JavaScript
-                                    </option>
-                                    <option>
-                                        Python
-                                    </option>
-                                    
-                                </select>
+                                    <select>
+                                        <option value="4" key="4">
+                                            C
+                                        </option>
+                                        <option value="5" key="5">
+                                            C++
+                                        </option>
+                                        <option value="1" key="1">
+                                            Java
+                                        </option>
+                                        <option value="3" key="3">
+                                            JavaScript
+                                        </option>
+                                        <option value="2" key="2">
+                                            Python
+                                        </option>
+
+                                    </select>
                                 </td>
                                 <th>
                                     {" "}
                                     대상자<span className="font_red">*</span>
                                 </th>
                                 <td>
-                                    <select onClick={(v) => lecplanlist.lec_sort = v.target.value}>                                   
-                                        <option >
+                                    <select>
+                                        <option value="직장인" key="직장인">
                                             {/*item.lec_sort*/}
                                             직장인
                                         </option>
-                                        <option>
+                                        <option value="실업자" key="실업자">
                                             실업자
                                         </option>
-                                           
                                     </select>
                                 </td>
                             </tr>
@@ -166,8 +123,7 @@ const selectChange = (id) => {
                                     <input
                                         type="text"
                                         className="form-control input-sm"
-                                        value={lecplanlist.name}
-                                        
+                                        value={lecInfo.name}
                                     />
                                 </td>
                                 <th>
@@ -175,15 +131,16 @@ const selectChange = (id) => {
                                     강의실<span className="font_red">*</span>
                                 </th>
                                 <td>
-                                    <select >
-                                        {idlist.map((item) => {
-                                            return(
-                                                <option >
-                                                    {lecplanlist.lecrm_name}
+                                    <select onChange={(e) => setLecture(e.target.value)}>
+                                        {roomlist.map((item, i) => {
+                                            return (
+                                                <option value={item.lecrm_id} selected={item.lecrm_id === lecInfo.lecrm_id ? true : false}>
+                                                    {item.lecrm_name}
                                                 </option>
                                             )
                                         })}
                                     </select>
+
                                 </td>
                             </tr>
                             <tr>
@@ -195,7 +152,7 @@ const selectChange = (id) => {
                                     <input
                                         type="text"
                                         className="form-control input-sm"
-                                        value={lecplanlist.mail}
+                                        value={lecInfo.mail}
                                     />
                                 </td>
                                 <th>
@@ -206,7 +163,7 @@ const selectChange = (id) => {
                                     <input
                                         type="text"
                                         className="form-control input-sm"
-                                        value={lecplanlist.tel}
+                                        value={lecInfo.tel}
                                     />
                                 </td>
                             </tr>
@@ -220,19 +177,20 @@ const selectChange = (id) => {
                                         style={{ width: "250px" }}
                                         type="text"
                                         className="form-control input-sm"
-                                        defaultValue={lecplanlist.lec_goal}
+                                        defaultValue={lecInfo.lec_goal}
+                                        ref={goal}
                                     />
                                 </td>
                             </tr>
-                        
+
                         </tbody>
                     </table>
 
                     <table className="col">
                         <colgroup>
-                           <col width="20%" />
-                           <col width="40%" />
-                           <col width="40%" />
+                            <col width="20%" />
+                            <col width="40%" />
+                            <col width="40%" />
                         </colgroup>
                         <thead>
                             <tr>
@@ -242,8 +200,8 @@ const selectChange = (id) => {
                             </tr>
                         </thead>
                         <tbody>
-                            {lecWeeklist.map((item) => {
-                                return(
+                            {weeklyPlan.map((item) => {
+                                return (
                                     <tr>
                                         <td>{item.week}</td>
                                         <td>{item.learn_goal}</td>
@@ -251,8 +209,6 @@ const selectChange = (id) => {
                                     </tr>
                                 )
                             })}
-                            
-
                         </tbody>
 
                     </table>
@@ -260,17 +216,16 @@ const selectChange = (id) => {
                 </div>
 
                 <p></p>
-                <button className="btn btn-primary" onClick={(event) => save(lecplanlist)}
-                     >
+                <button className="btn btn-primary" onClick={saveLecPlan}>
                     {" "}
                     저장{" "}
                 </button>{" "}
-                
-                <button className="btn btn-primary" onClick={close}>
+
+                <button className="btn btn-primary">
                     {" "}
                     닫기{" "}
                 </button>
-                
+
             </Modal>
         </div>
     )
