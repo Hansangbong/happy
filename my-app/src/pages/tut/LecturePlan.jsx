@@ -54,8 +54,6 @@ const LecturePlan = () => {
         setLeclist(res.data.listdata);
         setRoomlist(res.data.lec_room);
         setCurrentPage(cpage);
-        //console.log(JSON.stringify(res.data));
-
       })
       .catch((err) => {
         alert(err.message);
@@ -64,13 +62,11 @@ const LecturePlan = () => {
 
   const toggle = (state) => {
     setProgress(state);
-    // searchroom();
   }
 
   const openlec = (id) => {
     setLecid(id);
     setLecplanModal(true);
-
   }
 
   return (
@@ -135,7 +131,7 @@ const LecturePlan = () => {
               {leclist.map((item, i) => {
                 return (
                   <tr key={i}>
-                    <td>{item.lec_type_name}{/*count =+ 1*/}</td>
+                    <td>{item.lec_type_name}</td>
                     <td className="pointer-cursor"
                       onClick={() => openlec(item.lec_id)}>
                       {item.lec_name} </td>
