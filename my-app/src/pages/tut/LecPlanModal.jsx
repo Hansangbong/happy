@@ -8,11 +8,9 @@ const LecPlanModal = ({ id, idlist, modalAction, roomlist, setModalAction }) => 
     const [subject, setSubject] = useState(id); // 과목
     const goal = useRef(''); //수업 목표
     const [week, setWeek] = useState([]);
-    const learn_goal = [];
-    const learn_con = [];
-
-
-
+    let week2 = [];
+    let goalArray = [];
+    let conArray = [];
 
     useEffect(() => {
         getLecPlanDetail(subject);
@@ -36,22 +34,21 @@ const LecPlanModal = ({ id, idlist, modalAction, roomlist, setModalAction }) => 
 
         axios.post('/tut/fLecInfo.do', params).then((res) => {
             setLecInfo(res.data.lec_info);
-            console.log(res.data.lec_info)
             setWeeklyPlan(res.data.week_plan);
+
         }).catch((e) => {
             alert(e);
         })
     }
 
-    const saveLecPlan = () => {
-        let params = new URLSearchParams();
+    const saveLecPlan = () => {  //강의 계획 및 주간 계획 저장
+        let params = new URLSearchParams();    //강의 계획 저장 기능 시작
         params.append('tutor_id', lecInfo.tutor_id);
         params.append('lecrm_id', lecInfo.lecrm_id);
         params.append('lec_goal', goal.current.value);
         params.append('lec_type_id', lecInfo.lec_type_id);
         params.append('lec_sort', lecInfo.lec_sort);
         params.append('lec_id', lecInfo.lec_id);
-
 
         axios
             .post("/tut/savePlan.do", params)
@@ -62,12 +59,26 @@ const LecPlanModal = ({ id, idlist, modalAction, roomlist, setModalAction }) => 
                 alert(err.message);
             })
 
-        let weekParams = new URLSearchParams();
-        weekParams.append('lec_id', lecInfo.lec_id);
-        weekParams.append('learn_goal[]', learn_goal);
-        weekParams.append('learn_con[]', learn_con);
-        weekParams.append('week[]', week);
+        let weekParams = new URLSearchParams();   //주간 계획 저장 기능 시작
+        if (week[0]) {
+            console.log("뭔가 있습니다." + week[0]);
+        }
+        else {
+            for (let i = 0; i < week2.length; i++) {
+                weekParams.append('week[]', week2[i]);
+                weekParams.append('learn_goal[]', goalArray[i]);
+                weekParams.append('learn_con[]', conArray[i]);
+            }
+        }
 
+        weekParams.append('lec_id', lecInfo.lec_id);
+
+        for (let i = 0; i < week.length; i++) {
+            weekParams.append('week[]', week[i]);
+            weekParams.append('learn_goal[]', goalArray[i]);
+            weekParams.append('learn_con[]', conArray[i]);
+        }
+        console.log("위크파람:  ", weekParams);
         axios
             .post("/tut/saveWeekplan.do", weekParams)
             .then((response) => {
@@ -78,7 +89,7 @@ const LecPlanModal = ({ id, idlist, modalAction, roomlist, setModalAction }) => 
             })
 
         close();
-    }
+    }//saveLecPlan
 
     const close = () => {
         setModalAction(false);
@@ -89,6 +100,9 @@ const LecPlanModal = ({ id, idlist, modalAction, roomlist, setModalAction }) => 
         arrayAdd = [...weeklyPlan]; // 새로운 배열을 참조하게 만들기
         let weekCnt;
         let count;
+        let joocha = [...week2];
+
+
 
         if (arrayAdd.length < 1) {
             weekCnt = "1주차";
@@ -101,12 +115,49 @@ const LecPlanModal = ({ id, idlist, modalAction, roomlist, setModalAction }) => 
             weekCnt = (String)(weekCnt + "주차");
         }
 
-        arrayAdd.push({ "week": weekCnt });
-        //setWeek(weekCnt);
-        //week 스테이터스 변수에 weekCnt를 차곡차곡 쌓이게 해야함
+        arrayAdd.push({ "week": weekCnt }); //추가 버튼 클릭 즉시 눈에 보여야 할 출력용 배열
+        joocha.push(weekCnt); //새로 생성된 'n주차' 값들을 API에 전달하기 위해 배열 변수에 따로 보관
 
 
+        setWeek(joocha);
         setWeeklyPlan(arrayAdd);
+    }
+
+    const weekDel = () => {
+        let weekparams = new URLSearchParams();
+        let delWeekly = [...weeklyPlan];
+        weekparams.append("lec_id", lecInfo.lec_id);
+        weekparams.append('week', week2[week2.length - 1]);
+
+        axios.post('/tut/delWeekPlan.do', weekparams)
+            .then((res) => {
+
+                alert(res.data.resultMsg);
+            }).catch((err) => {
+                alert(err.message);
+            })
+
+
+        delWeekly.pop();
+        setWeeklyPlan(delWeekly);
+
+
+    }
+
+    const clear = () => {
+        const value = {
+            lec_id: "",
+            lec_type_id: "",
+            lec_name: "",
+            name: "",
+            tel: "",
+            mail: "",
+            lecrm_name: "",
+            tutor_id: "",
+            lec_sort: ""
+        }
+        setLecInfo(value);
+        setWeeklyPlan([]);
     }
 
     return (
@@ -127,8 +178,8 @@ const LecPlanModal = ({ id, idlist, modalAction, roomlist, setModalAction }) => 
                                     과목 <span className="font_red">*</span>
                                 </th>
                                 <td>
-                                    <select onChange={(e) => setSubject(e.target.value)} >
-                                        <option value={null}>
+                                    <select onChange={(e) => e.target.value == 100 ? clear() : setSubject(e.target.value)} >
+                                        <option value={100} >
                                             과목 선택
                                         </option>
                                         {idlist.map((item, i) => {
@@ -274,7 +325,7 @@ const LecPlanModal = ({ id, idlist, modalAction, roomlist, setModalAction }) => 
                         주차 추가
                     </button>{" "}
 
-                    <button>주차 삭제</button>
+                    <button onClick={weekDel}>주차 삭제</button>
 
                     <table className="col">
                         <colgroup>
@@ -291,18 +342,21 @@ const LecPlanModal = ({ id, idlist, modalAction, roomlist, setModalAction }) => 
                         </thead>
                         <tbody>
                             {weeklyPlan.map((item, i) => {
+                                week2.push(item.week);
+                                goalArray.push(item.learn_goal);
+                                conArray.push(item.learn_con);
                                 return (
                                     <tr key={i}>
-                                        <td onChange={(e) => (lecInfo.week = e.target.value)}>
+                                        <td>
                                             {item.week}
                                         </td>
                                         <td>
-                                            <input onChange={(e) => (learn_goal[i] = e.target.value)}
+                                            <input onInput={(e) => (e.target.value === "" ? null : goalArray[i] = e.target.value)}
                                                 defaultValue={item.learn_goal}>
                                             </input>
                                         </td>
                                         <td >
-                                            <input onChange={(e) => (learn_con[i] = e.target.value)}
+                                            <input onInput={(e) => (conArray[i] = e.target.value)}
                                                 defaultValue={item.learn_con}>
                                             </input>
                                         </td>
